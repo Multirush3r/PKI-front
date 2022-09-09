@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Box from "@mui/material/Box";
-import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
+import { DataGrid } from "@mui/x-data-grid";
+import UsersActions from "../components/UsersActions";
 
 // export type User = {
 //   id: number;
@@ -11,21 +12,30 @@ import { DataGrid, GridColDef, GridValueGetterParams } from "@mui/x-data-grid";
 //   verified: boolean;
 // };
 
-const columns: GridColDef[] = [
-  {
-    field: "name",
-    headerName: "Nick",
-    width: 250,
-  },
-  {
-    field: "verified",
-    headerName: "Is Verified?",
-    width: 250,
-  },
-];
-
 function AdminScreen() {
   const [users, setUsers] = useState([]);
+
+  const columns = useMemo(
+    () => [
+      {
+        field: "name",
+        headerName: "Nick",
+        width: 250,
+      },
+      {
+        field: "verified",
+        headerName: "Is Verified?",
+        width: 250,
+      },
+      {
+        field: "action",
+        headerName: "Action",
+        sortable: false,
+        renderCell: (params: any) => <UsersActions {...{ params }} />,
+      },
+    ],
+    []
+  );
 
   useEffect(() => {
     const getUsers = async () => {
@@ -56,6 +66,7 @@ function AdminScreen() {
         disableSelectionOnClick
         experimentalFeatures={{ newEditingApi: true }}
         rowHeight={50}
+        disableColumnMenu
       />
     </Box>
   );

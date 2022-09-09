@@ -1,5 +1,6 @@
 import { SyntheticEvent } from "react";
 import { Container, Navbar, Nav } from "react-bootstrap";
+import { useHistory } from "react-router-dom";
 
 interface Props {
   name: string;
@@ -7,6 +8,7 @@ interface Props {
 }
 
 const Header = ({ name, setName }: Props) => {
+  let history = useHistory();
   const logoutHandler = async (e: SyntheticEvent) => {
     e.preventDefault();
 
@@ -14,6 +16,7 @@ const Header = ({ name, setName }: Props) => {
     localStorage.jwt = null;
 
     setName("");
+    history.push("/");
   };
 
   return (

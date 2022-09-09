@@ -1,24 +1,27 @@
 import { SyntheticEvent, useState, useEffect } from "react";
 import { Form, Button } from "react-bootstrap";
 import FormContainer from "../components/FormContainer";
-import { RouteComponentProps } from "react-router";
 import {
   GoogleLogin,
   GoogleLoginResponse,
   GoogleLoginResponseOffline,
 } from "react-google-login";
 import { gapi } from "gapi-script";
-
-interface Props {
-  history: RouteComponentProps["history"];
-}
+import { useHistory } from "react-router-dom";
 
 const clientId =
   "1015428869673-8qkv6aoe2qsha614uh9j9g741q3st1ct.apps.googleusercontent.com";
 
-const LoginScreen = ({ history }: Props) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mess, setMess] = useState("");
+
+  let history = useHistory();
+
+  const styles = {
+    color: "red",
+  };
 
   const submitHandler = async (e: SyntheticEvent) => {
     e.preventDefault();
@@ -35,18 +38,23 @@ const LoginScreen = ({ history }: Props) => {
       }),
     });
 
-    const data = await response.json();
+    if (response.ok) {
+      const data = await response.json();
 
-    console.log(data);
+      console.log(data);
 
-    localStorage.name = data.name;
-    localStorage.jwt = data.accessToken;
+      localStorage.name = data.name;
+      localStorage.jwt = data.accessToken;
 
-    console.log(localStorage.name);
-    console.log(localStorage.jwt);
+      console.log(localStorage.name);
+      console.log(localStorage.jwt);
 
-    history.push("/");
-    // window.location.reload();
+      history.push("/");
+      window.location.reload();
+    } else {
+      setMess("BLAD LOGOWANIA");
+      console.log("BLAD");
+    }
   };
 
   useEffect(() => {
@@ -124,6 +132,9 @@ const LoginScreen = ({ history }: Props) => {
         cookiePolicy={"single_host_origin"}
         isSignedIn={false}
       />
+      <br />
+      <br />
+      <p style={styles}>{mess}</p>
     </FormContainer>
   );
 };
