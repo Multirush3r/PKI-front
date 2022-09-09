@@ -1,11 +1,20 @@
-import { SyntheticEvent, useState } from "react";
+import { SyntheticEvent, useState, useEffect } from "react";
 import { Form, Button } from "react-bootstrap";
 import FormContainer from "../components/FormContainer";
 import { RouteComponentProps } from "react-router";
+import {
+  GoogleLogin,
+  GoogleLoginResponse,
+  GoogleLoginResponseOffline,
+} from "react-google-login";
+import { gapi } from "gapi-script";
 
 interface Props {
   history: RouteComponentProps["history"];
 }
+
+const clientId =
+  "1015428869673-8qkv6aoe2qsha614uh9j9g741q3st1ct.apps.googleusercontent.com";
 
 const LoginScreen = ({ history }: Props) => {
   const [email, setEmail] = useState("");
@@ -14,18 +23,69 @@ const LoginScreen = ({ history }: Props) => {
   const submitHandler = async (e: SyntheticEvent) => {
     e.preventDefault();
 
+    console.log(JSON.stringify({ email: email, password: password }));
+
     //interact with a backend using fetch
-    await fetch("http://localhost:8080/api/auth/login", {
+    const response = await fetch("http://localhost:8080/api/auth/login", {
       method: "POST",
-      credentials: "include",
-      headers: { "Content-type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email: email,
         password: password,
       }),
     });
 
+    const data = await response.json();
+
+    console.log(data);
+
+    localStorage.name = data.name;
+    localStorage.jwt = data.accessToken;
+
+    console.log(localStorage.name);
+    console.log(localStorage.jwt);
+
     history.push("/");
+    // window.location.reload();
+  };
+
+  useEffect(() => {
+    const initClient = () => {
+      gapi.client.init({
+        clientId: clientId,
+        scope: "",
+      });
+    };
+    gapi.load("client:auth2", initClient);
+  });
+
+  const onSuccess = async (
+    res: GoogleLoginResponse | GoogleLoginResponseOffline
+  ) => {
+    console.log("success:", res);
+
+    //interact with a backend using fetch
+    if ("accessToken" in res) {
+      const response = await fetch(
+        "http://localhost:8080/api/auth/login/google/" + res.tokenId,
+        {
+          method: "POST",
+        }
+      );
+
+      const data = await response.json();
+
+      localStorage.name = data.name;
+      localStorage.jwt = data.accessToken;
+
+      console.log(localStorage.name);
+      console.log(localStorage.jwt);
+    }
+
+    history.push("/");
+  };
+  const onFailure = (err: Object) => {
+    console.log("failed:", err);
   };
 
   return (
@@ -52,9 +112,18 @@ const LoginScreen = ({ history }: Props) => {
           />
         </Form.Group>
         <Button className="my-3" variant="primary" type="submit">
-          Submit
+          Login with email
         </Button>
       </Form>
+      <p>OR YOU CAN</p>
+      <GoogleLogin
+        clientId={clientId}
+        buttonText="Sign in with Google"
+        onSuccess={onSuccess}
+        onFailure={onFailure}
+        cookiePolicy={"single_host_origin"}
+        isSignedIn={false}
+      />
     </FormContainer>
   );
 };

@@ -1,5 +1,5 @@
 import { SyntheticEvent } from "react";
-import { Container, Navbar, Nav, NavDropdown, Button } from "react-bootstrap";
+import { Container, Navbar, Nav } from "react-bootstrap";
 
 interface Props {
   name: string;
@@ -10,10 +10,8 @@ const Header = ({ name, setName }: Props) => {
   const logoutHandler = async (e: SyntheticEvent) => {
     e.preventDefault();
 
-    await fetch("http://localhost:8080/api/auth/logout", {
-      headers: { "Content-type": "application/json" },
-      credentials: "include",
-    });
+    localStorage.name = "";
+    localStorage.jwt = null;
 
     setName("");
   };
